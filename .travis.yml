@@ -1,0 +1,14 @@
+os: osx
+language: cpp
+compiler: clang
+before_script: 
+  - mkdir build
+  - cd build
+  - cmake ..
+script: make mpw
+before_install:
+  - brew update
+  - brew install lemon
+  - brew install ragel
+#  - brew install cmake # not needed.
+

@@ -61,6 +61,7 @@ add_custom_command(
 )
 
 
+
 set_source_files_properties(
 	loadtrap.cpp lexer.cpp template_loader.cpp
 	PROPERTIES
@@ -85,3 +86,9 @@ set_target_properties(mpw PROPERTIES LINK_FLAGS "-ledit")
 add_executable(disasm disasm.cpp)
 target_link_libraries(disasm CPU_LIB)
 target_link_libraries(disasm MACOS_LIB)
+
+install(
+  PROGRAMS
+    ${CMAKE_CURRENT_BINARY_DIR}/mpw
+  DESTINATION bin
+)

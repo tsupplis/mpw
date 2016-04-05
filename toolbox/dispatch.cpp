@@ -48,6 +48,7 @@
 #include "stackframe.h"
 #include "toolbox.h"
 #include "utility.h"
+#include "debug.h"
 
 #include <macos/sysequ.h>
 #include <macos/errors.h>
@@ -97,6 +98,20 @@ namespace {
 		// %1010 | 0 x x .  | . . . . . . . . |
 		return trap & 0x0600;
 	}
+
+	#if BYTE_ORDER == LITTLE_ENDIAN
+	inline constexpr uint16_t host_to_big_endian_16(uint16_t x)
+	{
+		return __builtin_bswap16(x);
+	}
+	#endif
+
+	#if BYTE_ORDER == BIG_ENDIAN
+	inline constexpr uint16_t host_to_big_endian_16(uint16_t x)
+	{
+		return x;
+	}
+	#endif
 
 }
 
@@ -224,6 +239,67 @@ namespace OS {
 		return 0;
 	}
 
+	uint16_t GetTrapAddress(uint16_t trap)
+	{
+
+		// FUNCTION GetTrapAddress (trapNum: Integer) :LongInt;
+
+		/*
+		 * on entry:
+		 * D0 An A-line trap word
+		 *
+		 * on exit:
+		 * A0 Address of next routine in the daisy chain (a system software routine or a patch)
+		 */
+
+		 /*
+		  * The GetTrapAddress function was used when both the Operating
+		  * System trap addresses and Toolbox trap addresses were located
+		  * in the same trap dispatch table. Today, any system software
+		  * routine with the trap number $00 to $4F, $54, or $57 is drawn
+		  * from the Operating System dispatch table; any other software
+		  * routine is taken from the Toolbox dispatch table.
+		 */
+
+		uint16_t trapNumber = cpuGetDReg(0);
+		const char *trapName = TrapName(trapNumber | 0xa000);
+		if (!trapName) trapName = "Unknown";		  
+
+		Log("%04x GetTrapAddress($%04x (%s))\n", trap, trapNumber, trapName);
+
+		trapNumber &= 0x03ff;
+		bool os = false;
+		if (trapNumber >= 0x00 && trapNumber <= 0x4f) os = true;
+		if (trapNumber >= 0x54 && trapNumber <= 0x57) os = true;
+
+		if (os)
+		{
+
+			if (os_address[trapNumber])
+			{
+				cpuSetAReg(0, os_address[trapNumber]);
+				return 0;
+			}
+
+			cpuSetAReg(0, OSGlue + trapNumber * 4);
+			return 0;
+
+		}
+		else
+		{
+			if (trap_address[trapNumber])
+			{
+				cpuSetAReg(0, trap_address[trapNumber]);
+				return 0;
+			}
+
+			cpuSetAReg(0, ToolGlue + trapNumber * 4);
+			return 0;			
+		}
+
+
+	}
+
 
 	uint16_t OSDispatch(uint16_t trap)
 	{
@@ -262,6 +338,7 @@ namespace OS {
 
 	}
 
+
 }
 
 namespace ToolBox {
@@ -279,13 +356,13 @@ namespace ToolBox {
 		uint16_t *code = (uint16_t *)memoryPointer(ToolGlue);
 
 		for (unsigned i = 0; i < 1024; ++i) {
-			*code++ = 0xafff;
-			*code++ = 0xa800 | i;
+			*code++ = host_to_big_endian_16(0xafff);
+			*code++ = host_to_big_endian_16(0xa800 | i);
 		}
 
 		for (unsigned i = 0; i < 256; ++i) {
-			*code++ = 0xafff;
-			*code++ = 0xa000 | i;
+			*code++ = host_to_big_endian_16(0xafff);
+			*code++ = host_to_big_endian_16(0xa000 | i);
 		}
 
 		// os return code... pull registers, TST.W d0, etc.
@@ -564,6 +641,10 @@ namespace ToolBox {
 				break;
 
 
+			case 0xa146:
+				d0 = OS::GetTrapAddress(trap);
+				break;
+
 			case 0xA746:
 				d0 = OS::GetToolTrapAddress(trap);
 				break;
@@ -620,6 +701,10 @@ namespace ToolBox {
 
 			case 0xa02a:
 				d0 = MM::HUnlock(trap);
+				break;
+
+			case 0xa02d:
+				d0 = MM::SetApplLimit(trap);
 				break;
 
 			// BlockMove (sourcePtr,destPtr: Ptr; byteCount: Size);
@@ -1009,6 +1094,11 @@ namespace ToolBox {
 			case 0xa88f:
 				d0 = OS::OSDispatch(trap);
 				break;
+
+			case 0xABFF:
+				d0 = Debug::DebugStr(trap);
+				break;
+
 
 			default:
 				fprintf(stderr, "Unsupported tool trap: %04x (%s)\n",

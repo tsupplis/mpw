@@ -51,6 +51,7 @@
 #include "sane.h"
 #include "stackframe.h"
 #include "utility.h"
+#include "debug.h"
 
 
 
@@ -271,6 +272,10 @@ namespace ToolBox {
 
 			case 0xa02a:
 				d0 = MM::HUnlock(trap);
+				break;
+
+			case 0xa02d:
+				d0 = MM::SetApplLimit(trap);
 				break;
 
 			// BlockMove (sourcePtr,destPtr: Ptr; byteCount: Size);
@@ -659,6 +664,11 @@ namespace ToolBox {
 
 			case 0xa88f:
 				d0 = OSDispatch(trap);
+				break;
+
+
+			case 0xABFF:
+				d0 = Debug::DebugStr(trap);
 				break;
 
 			default:
