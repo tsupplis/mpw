@@ -583,7 +583,7 @@ void MidInstructionExceptionFunc()
 }
 
 
-#define MPW_VERSION "0.8.0"
+#define MPW_VERSION "0.8.2"
 void help()
 {
 	printf("MPW " MPW_VERSION "\n");
@@ -784,6 +784,7 @@ int main(int argc, char **argv)
 		kTraceMPW,
 		kDebugger,
 		kMemoryStats,
+		kShell,
 	};
 	static struct option LongOpts[] =
 	{
@@ -804,6 +805,7 @@ int main(int argc, char **argv)
 
 		{ "help", no_argument, NULL, 'h' },
 		{ "version", no_argument, NULL, 'V' },
+		{ "shell", no_argument, NULL, kShell },
 		{ NULL, 0, NULL, 0 }
 	};
 
@@ -842,6 +844,9 @@ int main(int argc, char **argv)
 
 			case kDebugger:
 				Flags.debugger = true;
+				break;
+
+			case kShell:
 				break;
 
 			case 'm':

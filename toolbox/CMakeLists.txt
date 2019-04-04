@@ -1,8 +1,10 @@
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -stdlib=libc++ -Wall -Wno-deprecated-declarations -g")
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+	# Clang or AppleClang
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
+endif()
 
-add_definitions(-I ${CMAKE_SOURCE_DIR}/)
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
 set(TOOLBOX_SRC 
 	toolbox.cpp
@@ -20,7 +22,6 @@ set(TOOLBOX_SRC
 	os_volume.cpp
 	qd.cpp
 	sane.cpp
-	saneparser.cpp
 	packages.cpp
 	pathnames.cpp
 	process.cpp
@@ -30,13 +31,7 @@ set(TOOLBOX_SRC
 	dispatch.cpp
 	fpinfo.cpp
 	debug.cpp
-)
 
-
-add_custom_command(
-	OUTPUT saneparser.cpp
-	COMMAND ragel -p -G2 -o saneparser.cpp "${CMAKE_CURRENT_SOURCE_DIR}/saneparser.rl"
-	MAIN_DEPENDENCY saneparser.rl 
 )
 
 add_custom_command(
@@ -46,10 +41,12 @@ add_custom_command(
 )
 
 set_source_files_properties(
-	saneparser.cpp pathnames.cpp
+	pathnames.cpp
 	PROPERTIES
 	COMPILE_FLAGS 
 	"${CMAKE_CXX_FLAGS} -Wno-unused-variable"
 )
 
+
 add_library(TOOLBOX_LIB ${TOOLBOX_SRC})
+target_link_libraries(TOOLBOX_LIB MACOS_LIB sane)

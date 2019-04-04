@@ -1,10 +1,22 @@
-set(CMAKE_C_COMPILER "clang")
-set(CMAKE_CXX_COMPILER "clang++")
-set(CMAKE_CXX_FLAGS "-std=c++11 -stdlib=libc++ -Wall  -g")
-set(CMAKE_C_FLAGS " -Wall  -g")
+cmake_minimum_required(VERSION 3.1)
+project(mpw VERSION 0.8.2 LANGUAGES CXX C)
 
-project(mpw)
-cmake_minimum_required(VERSION 2.6)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+set(CMAKE_CXX_EXTENSIONS FALSE)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED TRUE)
+set(CMAKE_C_EXTENSIONS FALSE)
+
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+	# Clang or AppleClang
+	set(CMAKE_CXX_FLAGS "-Wall")
+	set(CMAKE_C_FLAGS "-Wall")
+endif()
+
+
+include_directories("${CMAKE_SOURCE_DIR}")
 
 add_subdirectory(bin)
 add_subdirectory(cpu)
@@ -12,3 +24,5 @@ add_subdirectory(toolbox)
 add_subdirectory(mplite)
 add_subdirectory(mpw)
 add_subdirectory(macos)
+
+add_subdirectory(libsane)
