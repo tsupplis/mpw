@@ -19,9 +19,7 @@ jobs:
         submodules: true
 
     - name: Brew
-      run: |
-        brew install ragel
-        brew install lemon
+      run: brew install ragel lemon
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
@@ -35,3 +33,10 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: cmake --build . --config $BUILD_TYPE
+      
+    - name: Archive
+      uses: actions/upload-artifact@v2
+      with:
+        name: mpw ${{ matrix.os }}
+        path: ${{runner.workspace}}/build/bin/mpw
+      
