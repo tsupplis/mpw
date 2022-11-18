@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(mpw VERSION 0.8.2 LANGUAGES CXX C)
+project(mpw VERSION 0.8.3 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
@@ -13,6 +13,12 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 	# Clang or AppleClang
 	set(CMAKE_CXX_FLAGS "-Wall")
 	set(CMAKE_C_FLAGS "-Wall")
+endif()
+
+
+find_program(RAGEL NAMES ragel)
+if (NOT RAGEL)
+	message(FATAL_ERROR "ragel (version 6) is required.")
 endif()
 
 
