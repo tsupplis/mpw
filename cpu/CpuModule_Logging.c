@@ -1,4 +1,3 @@
-/* @(#) $Id: CpuModule_Logging.c,v 1.3 2012-08-12 16:51:02 peschau Exp $ */
 /*=========================================================================*/
 /* Fellow                                                                  */
 /* CPU 68k logging functions                                               */
@@ -49,7 +48,7 @@ void cpuSetExceptionLoggingFunc(cpuExceptionLoggingFunc func)
   cpu_exception_logging_func = func;
 }
 
-void cpuCallExceptionLoggingFunc(STR *description, ULO original_pc, UWO opcode)
+void cpuCallExceptionLoggingFunc(char *description, uint32_t original_pc, uint16_t opcode)
 {
   if (cpu_exception_logging_func != NULL)
     cpu_exception_logging_func(description, original_pc, opcode);
@@ -60,7 +59,7 @@ void cpuSetInterruptLoggingFunc(cpuInterruptLoggingFunc func)
   cpu_interrupt_logging_func = func;
 }
 
-void cpuCallInterruptLoggingFunc(ULO level, ULO vector_address)
+void cpuCallInterruptLoggingFunc(uint32_t level, uint32_t vector_address)
 {
   if (cpu_interrupt_logging_func != NULL)
     cpu_interrupt_logging_func(level, vector_address);
